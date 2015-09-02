@@ -1,0 +1,7 @@
+{
+  "package" : {
+    "name" : "simple-it",
+    "repo" : "bintray-travisci-deploy-maven-plugin",
+    "subject" : "sandor-nemeth"
+  }
+}

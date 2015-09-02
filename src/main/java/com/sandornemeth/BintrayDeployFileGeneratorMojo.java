@@ -66,7 +66,7 @@ public class BintrayDeployFileGeneratorMojo extends AbstractMojo {
 
     File outputFile = new File(f, "bintray-deploy.json");
     try {
-      objectMapper.writeValue(outputFile, deploymentDescriptor);
+      objectMapper.writerWithDefaultPrettyPrinter().writeValue(outputFile, deploymentDescriptor);
     } catch (IOException e) {
       throw new MojoExecutionException("Error creating deployment descriptor " + outputFile, e);
     }
