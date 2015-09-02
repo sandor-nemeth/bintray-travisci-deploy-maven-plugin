@@ -16,6 +16,8 @@ package com.sandornemeth;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -23,45 +25,50 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 
 /**
  * Goal which touches a timestamp file.
  */
-@Mojo(name = "touch", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
-public class MyMojo extends AbstractMojo {
+@Mojo(name = "generate-bintray-descriptor", defaultPhase = LifecyclePhase.PROCESS_SOURCES)
+public class BintrayDeployFileGeneratorMojo extends AbstractMojo {
   /**
    * Location of the file.
    */
   @Parameter(defaultValue = "${project.build.directory}", property = "outputDir", required = true)
   private File outputDirectory;
 
-  public void execute()
-      throws MojoExecutionException {
-    File f = outputDirectory;
+  @Parameter(defaultValue = "${project.artifactId}", required = true, property = "package")
+  private String packageName;
 
+  @Parameter(required = true, property = "repository")
+  private String repository;
+
+  @Parameter(required = true)
+  private String subject;
+
+  public void execute() throws MojoExecutionException {
+    File f = outputDirectory;
     if (!f.exists()) {
       f.mkdirs();
     }
 
-    File touch = new File(f, "touch.txt");
+    ObjectMapper objectMapper = new ObjectMapper();
 
-    FileWriter w = null;
+    BintrayDeploymentDescriptor.PackageDescriptor packageDescriptor =
+        new BintrayDeploymentDescriptor.PackageDescriptor();
+    packageDescriptor.setName(packageName);
+    packageDescriptor.setRepo(repository);
+    packageDescriptor.setSubject(subject);
+
+    BintrayDeploymentDescriptor deploymentDescriptor = new BintrayDeploymentDescriptor();
+    deploymentDescriptor.setPackageDescriptor(packageDescriptor);
+
+    File outputFile = new File(f, "bintray-deploy.json");
     try {
-      w = new FileWriter(touch);
-
-      w.write("touch.txt");
+      objectMapper.writeValue(outputFile, deploymentDescriptor);
     } catch (IOException e) {
-      throw new MojoExecutionException("Error creating file " + touch, e);
-    } finally {
-      if (w != null) {
-        try {
-          w.close();
-        } catch (IOException e) {
-          // ignore
-        }
-      }
+      throw new MojoExecutionException("Error creating deployment descriptor " + outputFile, e);
     }
   }
 }

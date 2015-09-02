@@ -21,13 +21,17 @@
         <version>@project.version@</version>
         <executions>
           <execution>
-            <id>touch</id>
+            <id>generate-bintray-descriptor</id>
             <phase>validate</phase>
             <goals>
-              <goal>touch</goal>
+              <goal>generate-bintray-descriptor</goal>
             </goals>
           </execution>
         </executions>
+        <configuration>
+          <subject>sandor-nemeth</subject>
+          <repository>bintray-travisci-deploy-maven-plugin</repository>
+        </configuration>
       </plugin>
     </plugins>
   </build>
