@@ -26,6 +26,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Goal which touches a timestamp file.
@@ -47,6 +48,15 @@ public class BintrayDeployFileGeneratorMojo extends AbstractMojo {
   @Parameter(required = true)
   private String subject;
 
+  @Parameter(defaultValue = "${project.version}", required = true)
+  private String version;
+
+  @Parameter(defaultValue = "${project.artifactId}", required = true, readonly = true)
+  private String artifactId;
+
+  @Parameter(defaultValue = "${project.groupId}", required = true, readonly = true)
+  private String groupId;
+
   public void execute() throws MojoExecutionException {
     File f = outputDirectory;
     if (!f.exists()) {
@@ -60,9 +70,28 @@ public class BintrayDeployFileGeneratorMojo extends AbstractMojo {
     packageDescriptor.setName(packageName);
     packageDescriptor.setRepo(repository);
     packageDescriptor.setSubject(subject);
+    BintrayDeploymentDescriptor.VersionDescriptor versionDescriptor =
+        new BintrayDeploymentDescriptor.VersionDescriptor();
+    versionDescriptor.setName(version);
+
+    String groupPath = groupId.replace(".", "/");
+    String pathBase = groupPath + "/" + artifactId + "/" + version;
+
+    BintrayDeploymentDescriptor.UploadPattern artifactPattern = new BintrayDeploymentDescriptor
+        .UploadPattern();
+    artifactPattern.setIncludePattern("target/(" + artifactId + ".*\\.jar)");
+    artifactPattern.setUploadPattern(pathBase + "/$1");
+
+    BintrayDeploymentDescriptor.UploadPattern pomPattern = new BintrayDeploymentDescriptor
+        .UploadPattern();
+    pomPattern.setIncludePattern("./(pom.xml)");
+    pomPattern.setUploadPattern(pathBase + "/" + artifactId + "-" + version + ".pom");
 
     BintrayDeploymentDescriptor deploymentDescriptor = new BintrayDeploymentDescriptor();
     deploymentDescriptor.setPackageDescriptor(packageDescriptor);
+    deploymentDescriptor.setVersionDescriptor(versionDescriptor);
+    deploymentDescriptor.setFiles(Arrays.asList(new BintrayDeploymentDescriptor.UploadPattern[]
+        {artifactPattern, pomPattern}));
 
     File outputFile = new File(f, "bintray-deploy.json");
     try {

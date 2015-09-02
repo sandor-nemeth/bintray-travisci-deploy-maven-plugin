@@ -1,0 +1,18 @@
+{
+  "package" : {
+    "name" : "minimal-config",
+    "repo" : "bintray-travisci-deploy-maven-plugin",
+    "subject" : "sandor-nemeth"
+  },
+  "version" : {
+    "name" : "1.0"
+  },
+  "files" : [ {
+    "includePattern" : "target/(minimal-config.*\\.jar)",
+    "uploadPattern" : "com/sandornemeth/it/minimal-config/1.0/$1"
+  }, {
+    "includePattern" : "./(pom.xml)",
+    "uploadPattern" : "com/sandornemeth/it/minimal-config/1.0/minimal-config-1.0.pom"
+  } ],
+  "publish" : false
+}
